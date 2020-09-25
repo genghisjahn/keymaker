@@ -13,6 +13,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+//openssl genrsa -out app.rsa keysize
+// openssl rsa -in app.rsa -pubout > app.rsa.pub
+
 func main() {
 	name := flag.String("name", "temp", "The of the private key file to be used to sign the JWT")
 	aud := flag.String("aud", "none", "Audeince(aud) for the JWT.  If left blank no JWT will be created.  This is typcally the service that will be verifying and extracting data from the JWT to do something.")
