@@ -9,6 +9,8 @@ import (
 	"os"
 	"time"
 
+	b64 "encoding/base64"
+
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/ssh"
 )
@@ -30,8 +32,9 @@ func main() {
 		if jErr != nil {
 			log.Println(jErr)
 		}
-		fmt.Println(jwt)
+		saveJWT(*name, jwt)
 	}
+	savePubKeyToBase64(*name)
 
 }
 
@@ -49,7 +52,7 @@ func makeJWT(privepath, aud, sub string, exp int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"sub": sub,
 		"nbf": n.Unix(),
-		"exp": n.Add(time.Hour * time.Duration(exp)),
+		"exp": n.Add(time.Hour * time.Duration(exp)).Unix(),
 		"aud": aud,
 		"iat": n.Unix(),
 	})
@@ -60,12 +63,21 @@ func makeJWT(privepath, aud, sub string, exp int) (string, error) {
 }
 
 func saveJWT(filename, token string) {
-	outFile, err := os.Create(filename)
+	outFile, err := os.Create(filename + ".jwt")
 	checkError(err)
 	defer outFile.Close()
 	_, err2 := io.WriteString(outFile, token)
 	checkError(err2)
 	outFile.Sync()
+}
+
+func savePubKeyToBase64(name string) {
+	filename := name + ".rsa.pub"
+	data, err := ioutil.ReadFile(filename)
+	checkError(err)
+	sEnc := b64.StdEncoding.EncodeToString(data)
+	err2 := ioutil.WriteFile(name+".pub.base64", []byte(sEnc), 0644)
+	checkError(err2)
 }
 
 func checkError(err error) {
