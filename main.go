@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/x509"
 	"flag"
 	"fmt"
 	"io"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/ssh"
 )
 
 //openssl genrsa -out app.rsa keysize
@@ -23,7 +23,7 @@ func main() {
 	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
 	flag.Parse()
 
-	privName := *name + "rsa"
+	privName := *name + ".rsa"
 
 	if len(*aud) > 0 && len(*sub) > 0 && *exp > 0 {
 		jwt, jErr := makeJWT(privName, *aud, *sub, *exp)
@@ -41,7 +41,8 @@ func makeJWT(privepath, aud, sub string, exp int) (string, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	signKey, keyErr := x509.ParsePKCS1PrivateKey(signBytes)
+	signKey, keyErr := ssh.ParseRawPrivateKey(signBytes)
+
 	if keyErr != nil {
 		log.Println(keyErr)
 	}
