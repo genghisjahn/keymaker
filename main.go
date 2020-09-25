@@ -19,16 +19,15 @@ import (
 // openssl rsa -in app.rsa -pubout > app.rsa.pub
 
 func main() {
-	name := flag.String("name", "temp", "The of the base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'")
+	name := flag.String("name", "temp", "The of the base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.  This name will also be used as the Subject(sub) of the JWT if one is created.")
 	aud := flag.String("aud", "none", "Audeince(aud) for the JWT.  If left blank no JWT will be created.  This is typcally the service that will be verifying and extracting data from the JWT to do something.")
-	sub := flag.String("sub", "none", "Subject(sub) for the JWT.  If left blank no JWT will be created.  This is typcally the calling service that is supplying the JWT to the specified AUD service.")
 	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
 	flag.Parse()
 
 	privName := *name + ".rsa"
 
-	if len(*aud) > 0 && len(*sub) > 0 && *exp > 0 {
-		jwt, jErr := makeJWT(privName, *aud, *sub, *exp)
+	if len(*aud) > 0 && *exp > 0 {
+		jwt, jErr := makeJWT(privName, *aud, *name, *exp)
 		if jErr != nil {
 			log.Println(jErr)
 		}
