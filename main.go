@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +13,7 @@ import (
 	"time"
 
 	b64 "encoding/base64"
+	"encoding/pem"
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/ssh"
@@ -19,19 +23,26 @@ import (
 // openssl rsa -in app.rsa -pubout > app.rsa.pub
 
 func main() {
-	name := flag.String("name", "temp", "The of the base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.  This name will also be used as the Subject(sub) of the JWT if one is created.")
-	aud := flag.String("aud", "none", "Audeince(aud) for the JWT.  If left blank no JWT will be created.  This is typcally the service that will be verifying and extracting data from the JWT to do something.")
+	name := flag.String("name", "temp", "The of the base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.")
+	bsize := flag.Int("size", 4096, "Bitsize of the RSA key.  The default is 4096.")
+	sub := flag.String("sub", "", "Subject(sub) for the JWT.  If left blank no JWT will be created.  The subject is typically the source/signer of the JWT.")
+	aud := flag.String("aud", "", "Audience(aud) for the JWT.  If left blank no JWT will be created.  This is typcally the service that will be verifying and extracting data from the JWT to do something.")
 	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
 	flag.Parse()
 
-	privName := *name + ".rsa"
+	if err := makeRSAKeys(*name, *bsize); err != nil {
+		log.Println(err)
+		return
+	}
 
-	if len(*aud) > 0 && *exp > 0 {
-		jwt, jErr := makeJWT(privName, *aud, *name, *exp)
+	if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 {
+		jwt, jErr := makeJWT(*name+".rsa", *aud, *name, *exp)
 		if jErr != nil {
 			log.Println(jErr)
 		}
-		saveJWT(*name, jwt)
+		saveJWT(*name+".rsa", jwt)
+	} else {
+		log.Println("No JWT created.")
 	}
 	savePubKeyToBase64(*name)
 
@@ -68,6 +79,7 @@ func saveJWT(filename, token string) {
 	_, err2 := io.WriteString(outFile, token)
 	checkError(err2)
 	outFile.Sync()
+	log.Println(filename + ".jwt")
 }
 
 func savePubKeyToBase64(name string) {
@@ -77,6 +89,7 @@ func savePubKeyToBase64(name string) {
 	sEnc := b64.StdEncoding.EncodeToString(data)
 	err2 := ioutil.WriteFile(name+".pub.base64", []byte(sEnc), 0644)
 	checkError(err2)
+	log.Println(name + ".pub.base64")
 }
 
 func checkError(err error) {
@@ -84,4 +97,47 @@ func checkError(err error) {
 		fmt.Println("Fatal error ", err.Error())
 		os.Exit(1)
 	}
+}
+
+func makeRSAKeys(filename string, size int) error {
+	/*
+		Golang RSA Code provide by https://stackoverflow.com/a/64105068/13324985
+		Much thanks!
+	*/
+
+	// Generate RSA key.
+	key, err := rsa.GenerateKey(rand.Reader, size)
+	if err != nil {
+		return err
+	}
+
+	// Extract public component.
+	pub := key.Public()
+
+	// Encode private key to PKCS#1 ASN.1 PEM.
+	keyPEM := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: x509.MarshalPKCS1PrivateKey(key),
+		},
+	)
+
+	// Encode public key to PKCS#1 ASN.1 PEM.
+	pubPEM := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PUBLIC KEY",
+			Bytes: x509.MarshalPKCS1PublicKey(pub.(*rsa.PublicKey)),
+		},
+	)
+
+	// Write private key to file.
+	if err := ioutil.WriteFile(filename+".rsa", keyPEM, 0700); err != nil {
+		return err
+	}
+
+	// Write public key to file.
+	if err := ioutil.WriteFile(filename+".rsa.pub", pubPEM, 0755); err != nil {
+		return err
+	}
+	return nil
 }
