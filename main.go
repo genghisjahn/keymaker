@@ -54,8 +54,8 @@ func makeJWT(privepath, aud, sub string, exp int) (string, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	signKey, keyErr := ssh.ParseRawPrivateKey(signBytes)
-
+	//TODO THIS IS WHERE THE ERROR IS HAPPENING
+	signKey, keyErr := ssh.ParsePrivateKey(signBytes)
 	if keyErr != nil {
 		log.Println(keyErr)
 	}
@@ -117,15 +117,14 @@ func makeRSAKeys(filename string, size int) error {
 	// Encode private key to PKCS#1 ASN.1 PEM.
 	keyPEM := pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
+			Type:  "PRIVATE KEY",
 			Bytes: x509.MarshalPKCS1PrivateKey(key),
 		},
 	)
 
-	// Encode public key to PKCS#1 ASN.1 PEM.
 	pubPEM := pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PUBLIC KEY",
+			Type:  "PUBLIC KEY",
 			Bytes: x509.MarshalPKCS1PublicKey(pub.(*rsa.PublicKey)),
 		},
 	)
