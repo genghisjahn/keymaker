@@ -122,7 +122,7 @@ func makeRSAKeys(filename string, size int) error {
 		},
 	)
 
-	// Encode public key to PKCS#1 ASN.1 PEM.
+	// Encode public key to PKIXP PEM.
 
 	pubBytes, pbErr := x509.MarshalPKIXPublicKey(pub.(*rsa.PublicKey))
 	if pbErr != nil {
