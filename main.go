@@ -114,6 +114,7 @@ func makeRSAKeys(filename string, size int) error {
 	pub := key.Public()
 
 	// Encode private key to PKCS#1 ASN.1 PEM.
+
 	keyPEM := pem.EncodeToMemory(
 		&pem.Block{
 			Type:  "RSA PRIVATE KEY",
@@ -122,10 +123,15 @@ func makeRSAKeys(filename string, size int) error {
 	)
 
 	// Encode public key to PKCS#1 ASN.1 PEM.
+
+	pubBytes, pbErr := x509.MarshalPKIXPublicKey(pub.(*rsa.PublicKey))
+	if pbErr != nil {
+		log.Fatal(pbErr)
+	}
 	pubPEM := pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PUBLIC KEY",
-			Bytes: x509.MarshalPKCS1PublicKey(pub.(*rsa.PublicKey)),
+			Type:  "PUBLIC KEY",
+			Bytes: pubBytes,
 		},
 	)
 	// Write private key to file.
