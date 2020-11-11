@@ -36,7 +36,7 @@ func main() {
 	}
 	savePubKeyToBase64(*name)
 	if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 {
-		jwt, jErr := makeJWT(*name+".rsa", *aud, *name, *exp)
+		jwt, jErr := makeJWT(*name+".rsa", *aud, *sub, *exp)
 		if jErr != nil {
 			log.Println(jErr)
 		}
