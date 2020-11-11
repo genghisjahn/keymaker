@@ -69,7 +69,7 @@ Lastly, you can do both steps in one command.  That is, you can create an RSA ke
 
 This command will create the following four files:
 
-* `test_rsa.rsa` --This is the private key
-* `test_rsa.pub` --This is the public key
-* `test.rsa.pub.base64` --This is the public key encoded in base64
-* `test_jwt.jwt` --This is the file that contains the JWT
+* `temp_key.rsa` --This is the private key
+* `temp_key.rsa.pub` --This is the public key
+* `temp_key.pub.base64` --This is the public key encoded in base64
+* `temp_jwt.jwt` --This is the file that contains the JWT
