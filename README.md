@@ -39,6 +39,25 @@ You'll need to specify a few command line arguments to generate a valid JWT.
 When creating a JWT, `keymaker` will add Unix time stamps for `iat` (Issue At) and `nbf` (Not Before).  The values will be the time the JWT was created.
 
 
+The header of the JWT will look like this:
+```json
+{
+  "alg": "RS256",
+  "typ": "JWT"
+}
+
+The payload of the JWT will look something like this:
+```json
+{
+  "aud": "temp_aud",
+  "exp": 1605491395,
+  "iat": 1605131395,
+  "nbf": 1605131395,
+  "sub": "temp_sub"
+}
+```
+
+#### Creating an RSA Key pair and a JWT in one step
 Lastly, you can do both steps in one command.  That is, you can create an RSA key pair and create a jwt file.  For example:
 
 `./keymaker -name temp_key  -aud temp_aud -sub temp_sub  -exp 100 -jwt temp_jwt` 
