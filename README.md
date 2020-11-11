@@ -45,6 +45,7 @@ The header of the JWT will look like this:
   "alg": "RS256",
   "typ": "JWT"
 }
+```
 
 The payload of the JWT will look something like this:
 ```json
