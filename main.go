@@ -34,7 +34,7 @@ func main() {
 		log.Println(err)
 		return
 	}
-
+	savePubKeyToBase64(*name)
 	if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 {
 		jwt, jErr := makeJWT(*name+".rsa", *aud, *name, *exp)
 		if jErr != nil {
@@ -44,8 +44,6 @@ func main() {
 	} else {
 		log.Println("No JWT created.")
 	}
-	savePubKeyToBase64(*name)
-
 }
 
 func makeJWT(privepath, aud, sub string, exp int) (string, error) {
