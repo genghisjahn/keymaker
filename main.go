@@ -63,8 +63,6 @@ func main() {
 			fmt.Println(jErr)
 		}
 		saveJWT(*jwtfile, jwt)
-	} else {
-		fmt.Println("No JWT created.")
 	}
 }
 
@@ -100,7 +98,6 @@ func saveJWT(filename, token string) {
 	_, err2 := io.WriteString(outFile, token)
 	checkError(err2)
 	outFile.Sync()
-	fmt.Println(filename + ".jwt")
 }
 
 func savePubKeyToBase64(name string) {
