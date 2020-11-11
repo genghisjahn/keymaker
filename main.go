@@ -110,7 +110,6 @@ func savePubKeyToBase64(name string) {
 	sEnc := b64.StdEncoding.EncodeToString(data)
 	err2 := ioutil.WriteFile(name+".pub.base64", []byte(sEnc), 0644)
 	checkError(err2)
-	fmt.Println(name + ".pub.base64")
 }
 
 func checkError(err error) {
