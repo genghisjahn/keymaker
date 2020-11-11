@@ -58,6 +58,10 @@ The payload of the JWT will look something like this:
 }
 ```
 
+The JWT file itself won't look like that JSON output, it'll be a long line of base64 encoded parts separated by periods(.).  To see the values you'll have to decode it (https://jwt.io/).
+
+
+
 #### Creating an RSA Key pair and a JWT in one step
 Lastly, you can do both steps in one command.  That is, you can create an RSA key pair and create a jwt file.  For example:
 
