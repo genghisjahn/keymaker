@@ -24,7 +24,7 @@ import (
 // openssl rsa -in app.rsa -pubout > app.rsa.pub
 
 func main() {
-	name := flag.String("name", "temp", "The of the base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.")
+	name := flag.String("name", "temp", "The base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.")
 	keyfile := flag.String("keyfile", "temp_file", "The name of an existing private RSA key to use to sign a JWT.")
 	bsize := flag.Int("size", 4096, "Bitsize of the RSA key.  The default is 4096.")
 	sub := flag.String("sub", "", "Subject(sub) for the JWT.  If left blank no JWT will be created.  The subject is typically the source/signer of the JWT.")
