@@ -14,6 +14,7 @@ import (
 	"time"
 
 	b64 "encoding/base64"
+	"encoding/json"
 	"encoding/pem"
 
 	"github.com/dgrijalva/jwt-go"
@@ -74,10 +75,23 @@ func makeJWT(privepath, aud, sub, cf string, exp int) (string, error) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	if cf != "" {
+		cfdata, cfErr := ioutil.ReadFile(cf)
+		if cfErr != nil {
+			return "", cfErr
+		}
+		mData := map[string]string{}
+		jErr := json.Unmarshal(cfdata, &mData)
+		if jErr != nil {
+			return "", jErr
+		}
+		log.Println(mData)
+	}
 	signKey, keyErr := ssh.ParseRawPrivateKey(signBytes)
 
 	if keyErr != nil {
 		fmt.Println(keyErr)
+		return "", keyErr
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"sub": sub,

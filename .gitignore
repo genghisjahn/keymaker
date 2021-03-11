@@ -3,3 +3,4 @@
 *.base64
 keymaker
 .DS_Store
+*.json
