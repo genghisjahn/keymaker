@@ -30,6 +30,7 @@ func main() {
 	sub := flag.String("sub", "", "Subject(sub) for the JWT.  If left blank no JWT will be created.  The subject is typically the source/signer of the JWT.")
 	aud := flag.String("aud", "", "Audience(aud) for the JWT.  If left blank no JWT will be created.  This is typcally the service that will be verifying and extracting data from the JWT to do something.")
 	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
+	claimfile := flag.String("claimfile", "", "Path to json file that contains key/value pairs to be added as custom claims to the JWT")
 	jwtfile := flag.String("jwt", "", "The name of file that will contain the jwt token.  The suffix '.jwt' will be appended to this value.  If left blank no JWT will be created.")
 	flag.Parse()
 	privkeyname := ""
@@ -58,7 +59,7 @@ func main() {
 		savePubKeyToBase64(*name)
 	}
 	if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 && len(*jwtfile) > 0 {
-		jwt, jErr := makeJWT(privkeyname, *aud, *sub, *exp)
+		jwt, jErr := makeJWT(privkeyname, *aud, *sub, *claimfile, *exp)
 		if jErr != nil {
 			fmt.Println(jErr)
 		}
@@ -66,7 +67,7 @@ func main() {
 	}
 }
 
-func makeJWT(privepath, aud, sub string, exp int) (string, error) {
+func makeJWT(privepath, aud, sub, cf string, exp int) (string, error) {
 	n := time.Now()
 	signBytes, err := ioutil.ReadFile(privepath)
 	if err != nil {
