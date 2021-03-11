@@ -80,7 +80,7 @@ func makeJWT(privepath, aud, sub, cf string, exp int) (string, error) {
 		if cfErr != nil {
 			return "", cfErr
 		}
-		mData := map[string]string{}
+		mData := []map[string]string{}
 		jErr := json.Unmarshal(cfdata, &mData)
 		if jErr != nil {
 			return "", jErr
