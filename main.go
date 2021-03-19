@@ -27,8 +27,10 @@ func main() {
 	name := flag.String("name", "temp", "The base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.")
 	keyfile := flag.String("keyfile", "temp_file", "The name of an existing private RSA key to use to sign a JWT.")
 	bsize := flag.Int("size", 4096, "Bitsize of the RSA key.  The default is 4096.")
-	sub := flag.String("sub", "", "Subject(sub) for the JWT.  If left blank no JWT will be created.  The subject is typically the source/signer of the JWT.")
-	aud := flag.String("aud", "", "Audience(aud) for the JWT.  If left blank no JWT will be created.  This is typcally the service that will be verifying and extracting data from the JWT to do something.")
+	sub := flag.String("sub", "", "Subject(sub) for the JWT.  If left blank no JWT will be created.  The subject is the kinds of services/data that will be acted upon of the JWT.")
+	aud := flag.String("aud", "", "Audience(aud) for the JWT.  If left blank no JWT will be created.  This audience is the service that will be verifying and extracting data from the JWT to do something.")
+	iss := flag.String("iss", "", "Issuer(iss) for the JWT.  If left blank no JWT will be created. This issue is the entity that creates the JWT.")
+	scope := flag.String("scope", "", "Scope(scope) for the JWT.  If left blank no JWT will be created.  The scope is a space delimited value that dictates what the JWT can do.")
 	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
 	jwtfile := flag.String("jwt", "", "The name of file that will contain the jwt token.  The suffix '.jwt' will be appended to this value.  If left blank no JWT will be created.")
 	flag.Parse()
@@ -58,7 +60,7 @@ func main() {
 		savePubKeyToBase64(*name)
 	}
 	if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 && len(*jwtfile) > 0 {
-		jwt, jErr := makeJWT(privkeyname, *aud, *sub, *exp)
+		jwt, jErr := makeJWT(privkeyname, *iss, *aud, *sub, *scope, *exp)
 		if jErr != nil {
 			fmt.Println(jErr)
 		}
@@ -66,7 +68,7 @@ func main() {
 	}
 }
 
-func makeJWT(privepath, aud, sub string, exp int) (string, error) {
+func makeJWT(privepath, iss, aud, sub, scope string, exp int) (string, error) {
 	n := time.Now()
 	signBytes, err := ioutil.ReadFile(privepath)
 	if err != nil {
@@ -79,11 +81,13 @@ func makeJWT(privepath, aud, sub string, exp int) (string, error) {
 		fmt.Println(keyErr)
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
-		"sub": sub,
-		"nbf": n.Unix(),
-		"exp": n.Add(time.Hour * time.Duration(exp)).Unix(),
-		"aud": aud,
-		"iat": n.Unix(),
+		"iss":   iss,
+		"sub":   sub,
+		"nbf":   n.Unix(),
+		"exp":   n.Add(time.Hour * time.Duration(exp)).Unix(),
+		"aud":   aud,
+		"scope": scope,
+		"iat":   n.Unix(),
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
