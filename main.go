@@ -25,31 +25,29 @@ import (
 
 func main() {
 	name := flag.String("name", "temp", "The base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.")
-	keyfile := flag.String("keyfile", "temp_file", "The name of an existing private RSA key to use to sign a JWT.")
+	//	keyfile := flag.String("keyfile", "temp_file", "The name of an existing private RSA key to use to sign a JWT.")
 	bsize := flag.Int("size", 4096, "Bitsize of the RSA key.  The default is 4096.")
-	sub := flag.String("sub", "", "Subject(sub) for the JWT.  If left blank no JWT will be created.  The subject is the kinds of services/data that will be acted upon of the JWT.")
-	aud := flag.String("aud", "", "Audience(aud) for the JWT.  If left blank no JWT will be created.  This audience is the service that will be verifying and extracting data from the JWT to do something.")
-	iss := flag.String("iss", "", "Issuer(iss) for the JWT.  If left blank no JWT will be created. This issue is the entity that creates the JWT.")
-	scope := flag.String("scope", "", "Scope(scope) for the JWT.  If left blank no JWT will be created.  The scope is a space delimited value that dictates what the JWT can do.")
-	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
-	jwtfile := flag.String("jwt", "", "The name of file that will contain the jwt token.  The suffix '.jwt' will be appended to this value.  If left blank no JWT will be created.")
+	//	sub := flag.String("sub", "", "Subject(sub) for the JWT.  If left blank no JWT will be created.  The subject is the kinds of services/data that will be acted upon of the JWT.")
+	//	aud := flag.String("aud", "", "Audience(aud) for the JWT.  If left blank no JWT will be created.  This audience is the service that will be verifying and extracting data from the JWT to do something.")
+	//	iss := flag.String("iss", "", "Issuer(iss) for the JWT.  If left blank no JWT will be created. This issue is the entity that creates the JWT.")
+	//	scope := flag.String("scope", "", "Scope(scope) for the JWT.  If left blank no JWT will be created.  The scope is a space delimited value that dictates what the JWT can do.")
+	//	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
+	//	jwtfile := flag.String("jwt", "", "The name of file that will contain the jwt token.  The suffix '.jwt' will be appended to this value.  If left blank no JWT will be created.")
+	jwtfile := flag.String("jwtfile", "", "The name of the json file that contains properties used to create the JWT file.")
 	flag.Parse()
 	privkeyname := ""
-	if *name != "temp" && *keyfile != "temp_file" {
-		fmt.Println("Only the -name flag or the -keyfile flag can be specified at the same time.")
-		return
-	}
+
 	if *name != "temp" {
 		privkeyname = *name + ".rsa"
 	}
-	if *keyfile != "temp_file" {
-		privkeyname = *keyfile
-	}
+
 	lowJWT := strings.ToLower(*jwtfile)
 	if strings.HasSuffix(lowJWT, ".jwt") {
 		lowJWT = strings.TrimSuffix(lowJWT, ".jwt")
 		jwtfile = &lowJWT
 	}
+
+	j := JSONKeyInfo{}
 
 	if *name != "temp" {
 
@@ -59,12 +57,14 @@ func main() {
 		}
 		savePubKeyToBase64(*name)
 	}
-	if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 && len(*jwtfile) > 0 {
-		jwt, jErr := makeJWT(privkeyname, *iss, *aud, *sub, *scope, *exp)
+	if len(j.Audience) > 0 && j.Expiration > 0 && len(j.Subject) > 0 && len(j.JWTFile) > 0 && len(j.Issuer) > 0 {
+		jwt, jErr := makeJWT(privkeyname, j.Issuer, j.Audience, j.Subject, j.Scope, j.Expiration)
 		if jErr != nil {
 			fmt.Println(jErr)
 		}
 		saveJWT(*jwtfile, jwt)
+	} else {
+		fmt.Println("Invalid json file")
 	}
 }
 
