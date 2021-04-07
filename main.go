@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	b64 "encoding/base64"
@@ -20,7 +19,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-//openssl genrsa -out app.rsa keysize
+// openssl genrsa -out app.rsa keysize
 // openssl rsa -in app.rsa -pubout > app.rsa.pub
 
 func main() {
@@ -33,44 +32,37 @@ func main() {
 	//	scope := flag.String("scope", "", "Scope(scope) for the JWT.  If left blank no JWT will be created.  The scope is a space delimited value that dictates what the JWT can do.")
 	//	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
 	//	jwtfile := flag.String("jwt", "", "The name of file that will contain the jwt token.  The suffix '.jwt' will be appended to this value.  If left blank no JWT will be created.")
-	jwtfile := flag.String("jwtfile", "", "The name of the json file that contains properties used to create the JWT file.")
+	jwtjson := flag.String("jwtjson", "", "The name of the json file that contains properties used to create the JWT file.")
 	flag.Parse()
-	privkeyname := ""
-
-	if *name != "temp" {
-		privkeyname = *name + ".rsa"
-	}
-
-	lowJWT := strings.ToLower(*jwtfile)
-	if strings.HasSuffix(lowJWT, ".jwt") {
-		lowJWT = strings.TrimSuffix(lowJWT, ".jwt")
-		jwtfile = &lowJWT
-	}
 
 	j := JSONKeyInfo{}
-
+	loadErr := j.LoadFromFile(*jwtjson)
+	if loadErr != nil {
+		log.Fatalln(loadErr)
+	}
+	log.Print(j)
 	if *name != "temp" {
-
 		if err := makeRSAKeys(*name, *bsize); err != nil {
 			fmt.Println(err)
 			return
 		}
 		savePubKeyToBase64(*name)
+		return
 	}
-	if len(j.Audience) > 0 && j.Expiration > 0 && len(j.Subject) > 0 && len(j.JWTFile) > 0 && len(j.Issuer) > 0 {
-		jwt, jErr := makeJWT(privkeyname, j.Issuer, j.Audience, j.Subject, j.Scope, j.Expiration)
+	if errV := j.IsValid(); errV == nil {
+		jwt, jErr := makeJWT(j)
 		if jErr != nil {
 			fmt.Println(jErr)
 		}
-		saveJWT(*jwtfile, jwt)
+		saveJWT(j.JWTFile, jwt)
 	} else {
-		fmt.Println("Invalid json file")
+		fmt.Println("Invalid json file: ", errV.Error())
 	}
 }
 
-func makeJWT(privepath, iss, aud, sub, scope string, exp int) (string, error) {
+func makeJWT(j JSONKeyInfo) (string, error) {
 	n := time.Now()
-	signBytes, err := ioutil.ReadFile(privepath)
+	signBytes, err := ioutil.ReadFile(j.PrivateKeyPath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -80,14 +72,15 @@ func makeJWT(privepath, iss, aud, sub, scope string, exp int) (string, error) {
 	if keyErr != nil {
 		fmt.Println(keyErr)
 	}
+	ctime := n.Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
-		"iss":   iss,
-		"sub":   sub,
-		"nbf":   n.Unix(),
-		"exp":   n.Add(time.Hour * time.Duration(exp)).Unix(),
-		"aud":   aud,
-		"scope": scope,
-		"iat":   n.Unix(),
+		"iss":   j.Issuer,
+		"sub":   j.Subject,
+		"nbf":   ctime,
+		"exp":   n.Add(time.Hour * time.Duration(j.Expiration)).Unix(),
+		"aud":   j.Audience,
+		"scope": j.Scope,
+		"iat":   ctime,
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
@@ -95,29 +88,28 @@ func makeJWT(privepath, iss, aud, sub, scope string, exp int) (string, error) {
 
 }
 
-func saveJWT(filename, token string) {
-	outFile, err := os.Create(filename + ".jwt")
-	checkError(err)
+func saveJWT(filename, token string) error {
+	outFile, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
 	defer outFile.Close()
 	_, err2 := io.WriteString(outFile, token)
-	checkError(err2)
-	outFile.Sync()
+	if err2 != nil {
+		return err2
+	}
+	return outFile.Sync()
 }
 
-func savePubKeyToBase64(name string) {
+func savePubKeyToBase64(name string) error {
 	filename := name + ".rsa.pub"
 	data, err := ioutil.ReadFile(filename)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	sEnc := b64.StdEncoding.EncodeToString(data)
 	err2 := ioutil.WriteFile(name+".pub.base64", []byte(sEnc), 0644)
-	checkError(err2)
-}
-
-func checkError(err error) {
-	if err != nil {
-		fmt.Println("Fatal error ", err.Error())
-		os.Exit(1)
-	}
+	return err2
 }
 
 func makeRSAKeys(filename string, size int) error {

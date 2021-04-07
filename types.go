@@ -1,5 +1,12 @@
 package main
 
+import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"strings"
+)
+
 type JSONKeyInfo struct {
 	PrivateKeyPath string `json:"private_key_path"`
 	Subject        string `json:"sub"`
@@ -10,14 +17,42 @@ type JSONKeyInfo struct {
 	JWTFile        string `json:"jwt_file"`
 }
 
-/*
-	name := flag.String("name", "temp", "The base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.")
-	keyfile := flag.String("keyfile", "temp_file", "The name of an existing private RSA key to use to sign a JWT.")
-	bsize := flag.Int("size", 4096, "Bitsize of the RSA key.  The default is 4096.")
-	sub := flag.String("sub", "", "Subject(sub) for the JWT.  If left blank no JWT will be created.  The subject is the kinds of services/data that will be acted upon of the JWT.")
-	aud := flag.String("aud", "", "Audience(aud) for the JWT.  If left blank no JWT will be created.  This audience is the service that will be verifying and extracting data from the JWT to do something.")
-	iss := flag.String("iss", "", "Issuer(iss) for the JWT.  If left blank no JWT will be created. This issue is the entity that creates the JWT.")
-	scope := flag.String("scope", "", "Scope(scope) for the JWT.  If left blank no JWT will be created.  The scope is a space delimited value that dictates what the JWT can do.")
-	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
-	jwtfile := flag.String("jwt", "", "The name of file that will contain the jwt token.  The suffix '.jwt' will be appended to this value.  If left blank no JWT will be created.")
-*/
+func (j *JSONKeyInfo) LoadFromFile(path string) error {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	jErr := json.Unmarshal(data, &j)
+	if jErr != nil {
+		return jErr
+	}
+	return nil
+}
+
+func (j JSONKeyInfo) IsValid() error {
+	if len(j.PrivateKeyPath) == 0 {
+		return errors.New("private_key_path value is missing")
+	}
+	if len(j.Subject) == 0 {
+		return errors.New("sub value is missing")
+	}
+	if len(j.Audience) == 0 {
+		return errors.New("aud value is missing")
+	}
+	if len(j.Issuer) == 0 {
+		return errors.New("iss value is missing")
+	}
+	if len(j.Scope) == 0 {
+		return errors.New("scope value is missing")
+	}
+	if j.Expiration <= 0 {
+		return errors.New("exp must be greater than 0")
+	}
+	if len(j.JWTFile) == 0 {
+		return errors.New("jwt_file value is missing")
+	}
+	if !strings.HasSuffix(j.JWTFile, ".jwt") {
+		return errors.New("jwt_file value must end with .jwt")
+	}
+	return nil
+}
