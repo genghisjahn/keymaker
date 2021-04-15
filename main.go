@@ -33,7 +33,6 @@ func main() {
 	if loadErr != nil {
 		log.Fatalln(loadErr)
 	}
-	log.Print(j)
 	if *name != "temp" {
 		if err := makeRSAKeys(*name, *bsize); err != nil {
 			fmt.Println(err)
