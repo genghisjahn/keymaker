@@ -3,7 +3,7 @@
 #   How to use this shell script....
 #
 #
-#   climakejwt.sh uses 4 parameters
+#   makejwt.sh uses 4 parameters
 #
 #   $1 is the path to the file that contains the proto-jwt claims that will be put into the final, signed JWT
 #      There are place holder values in this file for iat, nbf and exp
