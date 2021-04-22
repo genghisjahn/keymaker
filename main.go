@@ -24,14 +24,18 @@ import (
 
 func main() {
 	name := flag.String("name", "temp", "The base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.")
-	bsize := flag.Int("size", 4096, "Bitsize of the RSA key.  The default is 4096.")
+	bsize := flag.Int("size", 2048, "Bitsize of the RSA key.  The default is 4096.")
 	jwtjson := flag.String("jwtjson", "", "The name of the json file that contains properties used to create the JWT file.")
 	flag.Parse()
 
 	j := JSONKeyInfo{}
-	loadErr := j.LoadFromFile(*jwtjson)
-	if loadErr != nil {
-		log.Fatalln(loadErr)
+	if *jwtjson != "" {
+
+		loadErr := j.LoadFromFile(*jwtjson)
+		if loadErr != nil {
+			log.Fatalln(loadErr)
+
+		}
 	}
 	if *name != "temp" {
 		if err := makeRSAKeys(*name, *bsize); err != nil {
@@ -140,7 +144,6 @@ func makeRSAKeys(filename string, size int) error {
 			Bytes: pubBytes,
 		},
 	)
-
 	// Write private key to file.
 	if err := ioutil.WriteFile(filename+".rsa", keyPEM, 0700); err != nil {
 		return err
