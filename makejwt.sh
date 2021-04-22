@@ -4,6 +4,8 @@
 #
 #
 #   makejwt.sh uses 5 parameters
+#
+#
 #   #1 is the kid or Key ID that identifies the key pair used to sign/identify the token.
 #
 #   $2 is the path to the file that contains the proto-jwt claims that will be put into the final, signed JWT
