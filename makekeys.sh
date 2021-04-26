@@ -31,3 +31,4 @@ base64 $1.pub > $1.pub.base64
 kid=$(xxd -l 4 -c 4 -p < /dev/random)
 echo "You must put this value in the kid (key id) of the JWT: " $kid
 
+
