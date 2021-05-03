@@ -4,4 +4,4 @@
 keymaker
 .DS_Store
 *.json
-makejwts.sh
+keys4qaprod.sh
