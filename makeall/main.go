@@ -41,9 +41,9 @@ func main() {
 	for _, v := range keydata {
 		cmdargs := fmt.Sprintf("%v %v %v %v %v", v.KID, v.Proto, v.Expiration, v.SecretPath, dirname+"/"+v.JWTName)
 		cmd := exec.Command("/bin/sh", "makejwt.sh", cmdargs)
-		cmd.Start()
-		cmd.Wait()
+		cmd.Run()
 	}
+	time.Sleep(time.Second * 10)
 
 }
 
