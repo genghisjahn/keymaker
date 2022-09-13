@@ -4,3 +4,4 @@
 keymaker
 .DS_Store
 *.json
+*.kid

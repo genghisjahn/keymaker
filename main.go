@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	mRand "math/rand"
 	"os"
 	"strings"
 	"time"
@@ -16,13 +17,23 @@ import (
 	b64 "encoding/base64"
 	"encoding/pem"
 
-	//"github.com/dgrijalva/jwt-go"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/ssh"
 )
 
 //openssl genrsa -out app.rsa keysize
 // openssl rsa -in app.rsa -pubout > app.rsa.pub
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+func randStr(n int) string {
+	mRand.Seed(int64(time.Now().UnixNano()))
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[mRand.Intn(len(letterBytes))] //#nosec cant use crypto/rand cause we cant seed it
+	}
+	return string(b)
+}
 
 func main() {
 	name := flag.String("name", "temp", "The base name of the private key file to be used to sign the JWT. If the file is called private.rsa you would just enter 'private'.")
@@ -59,20 +70,23 @@ func main() {
 			fmt.Println(err)
 			return
 		}
+		kid := randStr(8)
 		savePubKeyToBase64(*name)
-	}
-	if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 && len(*jwtfile) > 0 && len(*scope) > 0 {
-		jwt, jErr := makeJWT(privkeyname, *iss, *aud, *sub, *scope, *exp, *nbf)
-		if jErr != nil {
-			fmt.Println(jErr)
-		}
-		vErr := validateJWT(jwt)
-		if vErr != nil {
-			fmt.Println(vErr)
-		}
-		saveJWT(*jwtfile, jwt)
+		fmt.Println(*name + " kid:  " + kid)
 	} else {
-		fmt.Println("no JWT created")
+		if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 && len(*jwtfile) > 0 && len(*scope) > 0 {
+			jwt, jErr := makeJWT(privkeyname, *iss, *aud, *sub, *scope, *exp, *nbf)
+			if jErr != nil {
+				fmt.Println(jErr)
+			}
+			vErr := validateJWT(jwt)
+			if vErr != nil {
+				fmt.Println(vErr)
+			}
+			saveJWT(*jwtfile, jwt)
+		} else {
+			fmt.Println("no JWT created")
+		}
 	}
 }
 
@@ -182,5 +196,13 @@ func makeRSAKeys(filename string, size int) error {
 	if err := ioutil.WriteFile(filename+".rsa.pub", pubPEM, 0755); err != nil {
 		return err
 	}
+
+	kid := randStr(8)
+
+	//Write kid to file
+	if err := ioutil.WriteFile(filename+".kid", []byte(kid), 0700); err != nil {
+		return err
+	}
+
 	return nil
 }

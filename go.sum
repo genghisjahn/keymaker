@@ -1,3 +1,5 @@
+github.com/genghisjahn/xlog v0.0.0-20210430214200-818b5e96f3a6 h1:2fIBG6UE8GGdrjQKr9payq9f6MV/VuHEqPt3g7JBFSo=
+github.com/genghisjahn/xlog v0.0.0-20210430214200-818b5e96f3a6/go.mod h1:b+yoi/vjW6+ylBYcHrlMW/tEE5waufcqqL3mg3rC6TE=
 github.com/golang-jwt/jwt/v4 v4.4.2 h1:rcc4lwaZgFMCZ5jxF9ABolDcIHdBytAFgqFPbSJQAYs=
 github.com/golang-jwt/jwt/v4 v4.4.2/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w39/MY0Ch0=
 golang.org/x/crypto v0.0.0-20210314154223-e6e6c4f2bb5b h1:wSOdpTq0/eI46Ez/LkDwIsAKA71YP2SRKBODiRWM0as=
