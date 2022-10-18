@@ -45,6 +45,7 @@ func main() {
 	iss := flag.String("iss", "", "Issuer(iss) for the JWT.  If left blank no JWT will be created. This issue is the entity that creates the JWT.")
 	scope := flag.String("scope", "", "Scope(scope) for the JWT.  If left blank no JWT will be created.  The scope is a space delimited value that dictates what the JWT can do.")
 	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
+	kid := flag.String("kid", "", "kid is the key ID of the public key to use to verify the JWT.  If left blank no JWT will be created.")
 	jwtfile := flag.String("jwt", "", "The name of file that will contain the jwt token.  The suffix '.jwt' will be appended to this value.  If left blank no JWT will be created.")
 	flag.Parse()
 	privkeyname := ""
@@ -74,8 +75,8 @@ func main() {
 		savePubKeyToBase64(*name)
 		fmt.Println(*name + " kid:  " + kid)
 	} else {
-		if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 && len(*jwtfile) > 0 && len(*scope) > 0 {
-			jwt, jErr := makeJWT(privkeyname, *iss, *aud, *sub, *scope, *exp, *nbf)
+		if len(*aud) > 0 && *exp > 0 && len(*sub) > 0 && len(*jwtfile) > 0 && len(*scope) > 0 && len(*kid) > 0 {
+			jwt, jErr := makeJWT(*kid, privkeyname, *iss, *aud, *sub, *scope, *exp, *nbf)
 			if jErr != nil {
 				fmt.Println(jErr)
 			}
@@ -90,7 +91,7 @@ func main() {
 	}
 }
 
-func makeJWT(privepath, iss, aud, sub, scope string, exp int, nbf int64) (string, error) {
+func makeJWT(kid, privepath, iss, aud, sub, scope string, exp int, nbf int64) (string, error) {
 	n := time.Now()
 	signBytes, err := ioutil.ReadFile(privepath)
 	if err != nil {
@@ -109,11 +110,12 @@ func makeJWT(privepath, iss, aud, sub, scope string, exp int, nbf int64) (string
 		"iss":   iss,
 		"sub":   sub,
 		"nbf":   nbf,
-		"exp":   n.Add(time.Second * time.Duration(exp)).Unix(),
+		"exp":   n.Add(time.Hour * time.Duration(exp)).Unix(),
 		"aud":   aud,
 		"scope": scope,
 		"iat":   n.Unix(),
 	})
+	token.Header["kid"] = kid
 
 	// Sign and get the complete encoded token as a string using the secret
 	return token.SignedString(signKey)
