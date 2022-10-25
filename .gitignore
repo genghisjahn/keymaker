@@ -4,4 +4,7 @@
 keymaker
 .DS_Store
 *.json
+*.kid
+*bash*
 keys4qaprod.sh
+
