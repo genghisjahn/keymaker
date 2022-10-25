@@ -6,3 +6,5 @@ keymaker
 *.json
 *.kid
 *bash*
+keys4qaprod.sh
+
