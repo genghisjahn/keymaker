@@ -44,10 +44,15 @@ func main() {
 	aud := flag.String("aud", "", "Audience(aud) for the JWT.  If left blank no JWT will be created.  This audience is the service that will be verifying and extracting data from the JWT to do something.")
 	iss := flag.String("iss", "", "Issuer(iss) for the JWT.  If left blank no JWT will be created. This issue is the entity that creates the JWT.")
 	scope := flag.String("scope", "", "Scope(scope) for the JWT.  If left blank no JWT will be created.  The scope is a space delimited value that dictates what the JWT can do.")
+	/*
+		scope can have multiple space delimted values.  The array of values must be enclosed in double qutoes ("").
+		Example -scope "foo bar bizz bazz"
+	*/
 	exp := flag.Int("exp", 0, "Expiration(exp) hours from current unix time for the JWT expiration. If left blank no JWT will be created.")
 	kid := flag.String("kid", "", "kid is the key ID of the public key to use to verify the JWT.  If left blank no JWT will be created.")
 	jwtfile := flag.String("jwt", "", "The name of file that will contain the jwt token.  The suffix '.jwt' will be appended to this value.  If left blank no JWT will be created.")
 	flag.Parse()
+
 	privkeyname := ""
 	if *name != "temp" && *keyfile != "temp_file" {
 		fmt.Println("Only the -name flag or the -keyfile flag can be specified at the same time.")
