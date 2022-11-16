@@ -26,20 +26,25 @@
 #   replace place holder values for iat, nbf with the current unix/epoch time,
 #   replace place holder value exp  with current time + 10 ($3) hours as unix/epoch time,
 #   put the header, payload and signtaure together into one string, 
-#   create the signature based on that string with the private key in the file example.rsa ($4),
-#   output the result to the file example.jwt ($5).
+#   create the signature based on that string with the private key in the file example.rsa ($5),
+#   output the result to the file example.jwt ($6).
 jwt_header=$(echo -n '{"alg":"RS256","typ":"JWT","kid":"'$1'"}' | base64 | sed s/\+/-/ | sed -E s/=+$//)
 t=$(date +%s)
 exptime=$(date -j -v +$3H +%s)
+scope=$4
+
 filepayload=`cat $2`
 filepayload=${filepayload/\"iat_value\"/$t}
 filepayload=${filepayload/\"nbf_value\"/$t}
 filepayload=${filepayload/\"exp_value\"/ $exptime}
+filepayload=${filepayload/scope_value/$scope}
+
+
 payload=$(echo -n $filepayload | base64 | sed s/\+/-/ | sed -E s/=+$//)
 
 body=${jwt_header}.${payload}
 
-signature=$(echo -n $body | openssl dgst -sha256 -binary -sign $4  | openssl enc -base64 | tr -d '\n=' | tr -- '+/' '-_')
+signature=$(echo -n $body | openssl dgst -sha256 -binary -sign $5  | openssl enc -base64 | tr -d '\n=' | tr -- '+/' '-_')
   
 jwt=${jwt_header}.${payload}.${signature}
-echo $jwt > $5
+echo $jwt > $6
