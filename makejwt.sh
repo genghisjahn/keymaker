@@ -13,7 +13,7 @@
 #   
 #   $3 is the number of hours that will be added to the current time for the JWT's expiration
 #
-#   $4 is double quote enclosed (") space delimited values for scope
+#   $4 is double quote enclosed (") space delimited values for scope "scope1 scope2 scope3"
 #
 #   $5 is the path to the private rsa key that will be used to sign the JWT
 # 
