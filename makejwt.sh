@@ -13,13 +13,15 @@
 #   
 #   $3 is the number of hours that will be added to the current time for the JWT's expiration
 #
-#   $4 is the path to the private rsa key that will be used to sign the JWT
+#   $4 is double quote enclosed (") space delimited values for scope
+#
+#   $5 is the path to the private rsa key that will be used to sign the JWT
 # 
-#   $5 is name file that the signed JWT will be output to
+#   $6 is name file that the signed JWT will be output to
 #
 #   Example:
 
-#   ./climakejwt.sh 12345678 proto.json 10 example.rsa example.jwt
+#   ./climakejwt.sh 12345678 proto.json 10 "scope1 scope2" example.rsa example.jwt
 #   
 #   The above command will set the "kid" value in the header to 12345678,
 #   pen the proto.json ($2) file, 
@@ -28,12 +30,14 @@
 #   put the header, payload and signtaure together into one string, 
 #   create the signature based on that string with the private key in the file example.rsa ($5),
 #   output the result to the file example.jwt ($6).
+
 jwt_header=$(echo -n '{"alg":"RS256","typ":"JWT","kid":"'$1'"}' | base64 | sed s/\+/-/ | sed -E s/=+$//)
 t=$(date +%s)
 exptime=$(date -j -v +$3H +%s)
 scope=$4
 
 filepayload=`cat $2`
+
 filepayload=${filepayload/\"iat_value\"/$t}
 filepayload=${filepayload/\"nbf_value\"/$t}
 filepayload=${filepayload/\"exp_value\"/ $exptime}
