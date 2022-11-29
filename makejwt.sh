@@ -24,7 +24,7 @@
 #   ./climakejwt.sh 12345678 proto.json 10 "scope1 scope2" example.rsa example.jwt
 #   
 #   The above command will set the "kid" value in the header to 12345678,
-#   pen the proto.json ($2) file, 
+#   Open the proto.json ($2) file, 
 #   replace place holder values for iat, nbf with the current unix/epoch time,
 #   replace place holder value exp  with current time + 10 ($3) hours as unix/epoch time,
 #   put the header, payload and signtaure together into one string, 
