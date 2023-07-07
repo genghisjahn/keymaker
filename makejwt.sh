@@ -51,4 +51,4 @@ body=${jwt_header}.${payload}
 signature=$(echo -n $body | openssl dgst -sha256 -binary -sign $5  | openssl enc -base64 | tr -d '\n=' | tr -- '+/' '-_')
   
 jwt=${jwt_header}.${payload}.${signature}
-echo $jwt > $6
+echo -n $jwt > $6
